@@ -10,7 +10,7 @@ public struct UpdateVersionView: View {
     @State private var isCheckingVersion = false
     @State private var warningText = ""
     @State private var updated = false
-    
+    @Environment(\.openURL) var openURL
     
     
     public init(link: String, serverJSON: String ) {
@@ -68,7 +68,7 @@ public struct UpdateVersionView: View {
                     .environment(\.openURL, OpenURLAction { url in
                            
                            // Do something here...
-                           
+                        openURL(URL(string: link)!)
                            return .handled
                        })
                 
