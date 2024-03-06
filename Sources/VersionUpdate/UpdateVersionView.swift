@@ -65,6 +65,12 @@ public struct UpdateVersionView: View {
                     Image(systemName: "checkmark.circle").foregroundColor(.red)
                 }
                 Text(.init(warningText))
+                    .environment(\.openURL, OpenURLAction { url in
+                           
+                           // Do something here...
+                           
+                           return .handled
+                       })
                 
             }.opacity(isCheckingVersion ? 0 : 1)
             
