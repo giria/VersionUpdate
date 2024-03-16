@@ -3,6 +3,11 @@
 
 import SwiftUI
 
+
+enum VersionNetworkError : Error {
+    case httpError
+}
+
 public struct UpdateVersionView: View {
     
     public let link:String  // link to the url of the  app we want to update
@@ -35,6 +40,14 @@ public struct UpdateVersionView: View {
                     do {
                         let info = try await checkLastVersion()
                         isCheckingVersion = false
+                        
+                        guard let info = info else {
+                            warningText = "**The Internet connection appears to be offline**"
+                            updated = false
+                            
+                            return
+                        }
+                        
                         if AppVersionProvider.appVersion() == info[0].version {
                             warningText = "**Your device is updated** - Version \(info[0].version)"
                             updated = true
@@ -79,18 +92,29 @@ public struct UpdateVersionView: View {
         
     }
     
-     func checkLastVersion() async throws  -> Info {
-        
-        try await Task.sleep(for: .seconds(2.0))
+     func checkLastVersion() async throws  -> Info? {
+         var response: Info?
+            try  await Task.sleep(for: .seconds(2.0))
+         
         let endPointURL = URL(string: serverJSON)!
-        let i = try await checkVersion(from: endPointURL)
-        return i
+         do {
+             response = try await checkVersion(from: endPointURL)
+         } catch {
+             return nil
+         }
+        return response
     }
     
-     func checkVersion(from url: URL) async throws -> Info {
+     func checkVersion(from url: URL) async throws -> Info? {
         
         let (data, response) = try await URLSession.shared.data(from: url)
-        
+         guard let httpResponse = (response as? HTTPURLResponse),
+                     200...299 ~= httpResponse.statusCode else {
+             throw VersionNetworkError.httpError
+             }
+         
+         
+         
         print(response)
         let decoder = JSONDecoder()
         return try decoder.decode(Info.self, from: data)
@@ -109,6 +133,7 @@ struct UpdateVersionView_Previews: PreviewProvider {
         UpdateVersionView(link: "https://apps.apple.com/gb/app/life-in-the-uk-test-discovery/id1673106818)", serverJSON: "https://delightful-bonbon-cf67ee.netlify.app/versionLifeUK")
     }
 }
+
 
 
 
