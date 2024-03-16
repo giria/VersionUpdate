@@ -8,6 +8,7 @@ enum VersionNetworkError : Error {
     case httpError
 }
 
+
 public struct UpdateVersionView: View {
     
     public let link:String  // link to the url of the  app we want to update
